@@ -4,6 +4,7 @@ from .forms import UserLoginForm, UserRegistrationForm, UserProfileForm
 from .models import User
 from django.contrib import auth, messages
 from django.urls import reverse
+from products.models import Basket
 
 
 # class Login(CreateView):
@@ -50,13 +51,29 @@ def profile(request):
         form = UserProfileForm(instance=request.user, data=request.POST, files=request.FILES)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Данные успешно изменены')
             return HttpResponseRedirect(reverse('profile'))
         else:
             print(form.errors)
     else:
         form = UserProfileForm(instance=request.user)
+
+    baskets = Basket.objects.filter(user=request.user)
+    total_sum=0
+    total_quantity=0
+
     context = {
         'title':'Store - Профиль',
-        'form':form
+        'form':form,
+        'baskets': baskets,
                }
     return render(request, 'users/profile.html',context)
+
+
+
+def logout(request):
+    auth.logout(request)
+    return HttpResponseRedirect(reverse('index'))
+
+
+
