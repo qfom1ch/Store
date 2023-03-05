@@ -1,8 +1,9 @@
 from django.shortcuts import render, HttpResponseRedirect
 from django.views.generic import TemplateView
 from .models import Product, ProductCategory, Basket
+from django.contrib.auth.decorators import login_required
 from users.models import User
-
+from django.core.paginator import Paginator
 
 
 class IndexView(TemplateView):
@@ -13,18 +14,35 @@ class IndexView(TemplateView):
         context['title']='Store'
         return context
 
+def products(request, category_id=None, page_number=1):
 
-class Products(TemplateView):
-    template_name = 'products/products.html'
+    # if category_id:
+    #     category = ProductCategory.objects.get(id=category_id)
+    #     products = Product.objects.filter(category_id=category_id)
+    # else:
+    #     products = Product.objects.all()
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['title']='Store - Каталог'
-        context['products']= Product.objects.all()
-        context['categories']= ProductCategory.objects.all()
-        return context
+    products = Product.objects.filter(category_id=category_id) if category_id else Product.objects.all()
+    paginator = Paginator(products, per_page=3)
+    products_paginator = paginator.page(page_number)
+    context = {'title': 'Store - Каталог',
+               'products': products_paginator,
+               'categories': ProductCategory.objects.all(),
+               }
+    return render(request, 'products/products.html', context)
 
 
+# class Products(TemplateView):
+#     template_name = 'products/products.html'
+#
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         context['title']='Store - Каталог'
+#         context['products']= Product.objects.all()
+#         context['categories']= ProductCategory.objects.all()
+#         return context
+
+@login_required
 def basket_add(request, product_id):
     product = Product.objects.get(id=product_id)
     baskets = Basket.objects.filter(user=request.user, product=product)
@@ -39,7 +57,7 @@ def basket_add(request, product_id):
     return HttpResponseRedirect(request.META['HTTP_REFERER'])
 
 
-
+@login_required
 def basket_remove(request, basket_id):
     basket = Basket.objects.get(id=basket_id)
     basket.delete()
