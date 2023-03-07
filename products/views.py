@@ -1,5 +1,5 @@
 from django.shortcuts import render, HttpResponseRedirect
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, ListView,
 from .models import Product, ProductCategory, Basket
 from django.contrib.auth.decorators import login_required
 from users.models import User
@@ -14,33 +14,40 @@ class IndexView(TemplateView):
         context['title']='Store'
         return context
 
-def products(request, category_id=None, page_number=1):
 
-    # if category_id:
-    #     category = ProductCategory.objects.get(id=category_id)
-    #     products = Product.objects.filter(category_id=category_id)
-    # else:
-    #     products = Product.objects.all()
-
-    products = Product.objects.filter(category_id=category_id) if category_id else Product.objects.all()
-    paginator = Paginator(products, per_page=3)
-    products_paginator = paginator.page(page_number)
-    context = {'title': 'Store - Каталог',
-               'products': products_paginator,
-               'categories': ProductCategory.objects.all(),
-               }
-    return render(request, 'products/products.html', context)
+class ProductsListView(ListView):
+    model = Product
+    template_name = 'products/products.html'
+    paginate_by = 3
+    context_object_name = "products"
 
 
-# class Products(TemplateView):
-#     template_name = 'products/products.html'
+
+    def get_queryset(self):
+        queryset = super(ProductsListView, self).get_queryset()
+        category_id = self.kwargs.get('category_id')
+        return queryset.filter(category_id=category_id) if category_id else queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title']='Store - Каталог'
+        context['categories']= ProductCategory.objects.all()
+        return context
+
+
+
+# def products(request, category_id=None, page_number=1):
 #
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         context['title']='Store - Каталог'
-#         context['products']= Product.objects.all()
-#         context['categories']= ProductCategory.objects.all()
-#         return context
+#     products = Product.objects.filter(category_id=category_id) if category_id else Product.objects.all()
+#     paginator = Paginator(products, per_page=3)
+#     products_paginator = paginator.page(page_number)
+#     context = {'title': 'Store - Каталог',
+#                'products': products_paginator,
+#                'categories': ProductCategory.objects.all(),
+#                }
+#     return render(request, 'products/products.html', context)
+
+
 
 @login_required
 def basket_add(request, product_id):

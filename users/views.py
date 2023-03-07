@@ -7,6 +7,7 @@ from django.urls import reverse
 from products.models import Basket
 from django.contrib.auth.decorators import login_required
 
+from django.views.generic.edit import CreateView
 # class Login(CreateView):
 #     model = User
 #     form_class = UserLoginForm
@@ -30,6 +31,9 @@ def login(request):
     context = {'form':form}
     return render(request, 'users/login.html', context)
 
+
+class UserRegistrationView(CreateView):
+    model = User
 
 
 def registration(request):
