@@ -1,5 +1,6 @@
 from django.urls import path
-from .views import IndexView, basket_add, basket_remove, ProductsListView
+
+from .views import IndexView, ProductsListView, basket_add, basket_remove
 
 urlpatterns = [
     path('', IndexView.as_view(), name='index'),

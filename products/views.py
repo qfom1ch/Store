@@ -1,26 +1,26 @@
-from django.shortcuts import render, HttpResponseRedirect
-from django.views.generic import TemplateView, ListView,
-from .models import Product, ProductCategory, Basket
 from django.contrib.auth.decorators import login_required
-from users.models import User
 from django.core.paginator import Paginator
+from django.shortcuts import HttpResponseRedirect, render
+from django.views.generic import ListView, TemplateView, UpdateView
+
+from common.views import TitleMixin
+from users.models import User
+
+from .models import Basket, Product, ProductCategory
 
 
-class IndexView(TemplateView):
+class IndexView(TitleMixin, TemplateView):
     template_name = 'products/index.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['title']='Store'
-        return context
+    title = 'Store'
 
 
-class ProductsListView(ListView):
+
+class ProductsListView(TitleMixin, ListView):
     model = Product
     template_name = 'products/products.html'
     paginate_by = 3
     context_object_name = "products"
-
+    title = 'Store - Каталог'
 
 
     def get_queryset(self):
@@ -30,22 +30,12 @@ class ProductsListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title']='Store - Каталог'
         context['categories']= ProductCategory.objects.all()
         return context
 
 
 
-# def products(request, category_id=None, page_number=1):
-#
-#     products = Product.objects.filter(category_id=category_id) if category_id else Product.objects.all()
-#     paginator = Paginator(products, per_page=3)
-#     products_paginator = paginator.page(page_number)
-#     context = {'title': 'Store - Каталог',
-#                'products': products_paginator,
-#                'categories': ProductCategory.objects.all(),
-#                }
-#     return render(request, 'products/products.html', context)
+
 
 
 
@@ -63,6 +53,16 @@ def basket_add(request, product_id):
 
     return HttpResponseRedirect(request.META['HTTP_REFERER'])
 
+# def products(request, category_id=None, page_number=1):
+#
+#     products = Product.objects.filter(category_id=category_id) if category_id else Product.objects.all()
+#     paginator = Paginator(products, per_page=3)
+#     products_paginator = paginator.page(page_number)
+#     context = {'title': 'Store - Каталог',
+#                'products': products_paginator,
+#                'categories': ProductCategory.objects.all(),
+#                }
+#     return render(request, 'products/products.html', context)
 
 @login_required
 def basket_remove(request, basket_id):
