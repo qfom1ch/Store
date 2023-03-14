@@ -12,7 +12,7 @@ class User(AbstractUser):
     email = models.EmailField(unique=True, blank=False)
 
     def __str__(self):
-        return f'{self.first_name}'
+        return f'{self.username}'
 
 
 class EmailVerification(models.Model):
